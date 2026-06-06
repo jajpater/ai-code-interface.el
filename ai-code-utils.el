@@ -28,6 +28,24 @@
 (defconst ai-code-files-dir-name ".ai.code.files"
   "Directory name for storing AI task files.")
 
+;;;###autoload
+(defcustom ai-code-files-directory-strategy 'git-root
+  "Strategy for choosing where `.ai.code.files' is stored.
+The default `git-root' keeps the historic behavior: use the main
+worktree repository root when available, then the Git root, and fall
+back to `default-directory' outside Git.
+
+When set to `current-directory', store `.ai.code.files' under the
+current buffer's `default-directory'.
+
+When set to a string, treat it as an explicit directory.  Relative
+directories are expanded against `default-directory'."
+  :type '(choice
+          (const :tag "Git root" git-root)
+          (const :tag "Current directory" current-directory)
+          (directory :tag "Explicit directory"))
+  :group 'ai-code)
+
 (defun ai-code--git-root (&optional dir)
   "Return the normalized Git repository root path, or nil.
 Calls `magit-toplevel' with optional DIR argument and applies
@@ -67,15 +85,21 @@ Tries project.el first, then Git root, then `default-directory'."
 
 (defun ai-code--get-files-directory ()
   "Get the task directory path.
-If inside a git worktree, return `.ai.code.files/' under the main
-repository root so task files are shared across worktrees.
-If in a regular git repository, return `.ai.code.files/' under git root.
-Otherwise, return the current `default-directory'."
-  (let ((root (or (ai-code--worktree-main-repo-root)
-                  (ai-code--git-root))))
-    (if root
-        (expand-file-name ai-code-files-dir-name root)
-      default-directory)))
+The location is controlled by `ai-code-files-directory-strategy'."
+  (pcase ai-code-files-directory-strategy
+    ('git-root
+     (let ((root (or (ai-code--worktree-main-repo-root)
+                     (ai-code--git-root))))
+       (if root
+           (expand-file-name ai-code-files-dir-name root)
+         default-directory)))
+    ('current-directory
+     (expand-file-name ai-code-files-dir-name default-directory))
+    ((pred stringp)
+     (expand-file-name ai-code-files-directory-strategy))
+    (_
+     (user-error "Unknown ai-code-files-directory-strategy: %S"
+                 ai-code-files-directory-strategy))))
 
 (defun ai-code--ensure-files-directory ()
   "Ensure the task directory exists and return its path."

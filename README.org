@@ -408,6 +408,23 @@ When working with multiple AI sessions, it can be useful to receive desktop noti
      - A practical workflow is: press `C-c a`, then `S`, keep the default URL, and let the backend read the repository README and install the skills it describes.
      - [[https://github.com/obra/superpowers][obra/superpowers]] pair well with this package's existing harness-oriented workflows, especially the `ai-code-auto-test-type` feedback loop, `ai-code-tdd-cycle`, and `ai-code-pull-or-review-diff-file` code review flow.
 
+**** Prompt File Location
+
+By default, AI Code stores prompt and task files in =.ai.code.files/= under
+the main Git repository root.  You can customize
+=ai-code-files-directory-strategy= when you want a different location:
+
+#+begin_src elisp
+;; Default behavior: .ai.code.files under the Git root.
+(setq ai-code-files-directory-strategy 'git-root)
+
+;; Store .ai.code.files under the current buffer's directory.
+(setq ai-code-files-directory-strategy 'current-directory)
+
+;; Store files in an explicit directory.
+(setq ai-code-files-directory-strategy "~/ai-code-files/")
+#+end_src
+
    Natively supported options:
    - [[https://github.com/openai/codex][OpenAI codex CLI]] (`[[./ai-code-codex-cli.el][ai-code-codex-cli.el]]`)
    - [[https://docs.github.com/en/copilot/how-tos/use-copilot-agents/use-copilot-cli][GitHub Copilot CLI]] (`[[./ai-code-github-copilot-cli.el][ai-code-github-copilot-cli.el]]`)

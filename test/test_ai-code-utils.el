@@ -70,25 +70,48 @@
 
 (ert-deftest test-ai-code-utils-get-files-directory-under-git-root ()
   "get-files-directory should return files dir under git root."
-  (cl-letf (((symbol-function 'magit-toplevel)
-             (lambda (&optional _dir) "/repo/")))
-    (should (string-match-p "\\.ai\\.code\\.files"
-                            (ai-code--get-files-directory)))))
+  (let ((ai-code-files-directory-strategy 'git-root))
+    (cl-letf (((symbol-function 'magit-toplevel)
+               (lambda (&optional _dir) "/repo/"))
+              ((symbol-function 'ai-code--worktree-main-repo-root)
+               (lambda () nil)))
+      (should (string-match-p "\\.ai\\.code\\.files"
+                              (ai-code--get-files-directory))))))
+
+(ert-deftest test-ai-code-utils-get-files-directory-current-directory ()
+  "get-files-directory should support a current-directory strategy."
+  (let ((ai-code-files-directory-strategy 'current-directory)
+        (default-directory "/tmp/current/"))
+    (should (equal (ai-code--get-files-directory)
+                   "/tmp/current/.ai.code.files"))))
+
+(ert-deftest test-ai-code-utils-get-files-directory-explicit-directory ()
+  "get-files-directory should support an explicit directory."
+  (let ((ai-code-files-directory-strategy "/tmp/custom-ai-code-files/")
+        (default-directory "/tmp/current/"))
+    (should (equal (ai-code--get-files-directory)
+                   "/tmp/custom-ai-code-files/"))))
 
 (ert-deftest test-ai-code-utils-get-files-directory-fallback ()
   "get-files-directory should fall back to default-directory outside git."
-  (let ((default-directory "/tmp/no-git/"))
+  (let ((ai-code-files-directory-strategy 'git-root)
+        (default-directory "/tmp/no-git/"))
     (cl-letf (((symbol-function 'magit-toplevel)
-               (lambda (&optional _dir) nil)))
+               (lambda (&optional _dir) nil))
+              ((symbol-function 'ai-code--worktree-main-repo-root)
+               (lambda () nil)))
       (should (equal (ai-code--get-files-directory) "/tmp/no-git/")))))
 
 (ert-deftest test-ai-code-utils-ensure-files-directory-creates-dir ()
   "ensure-files-directory should create the directory if needed."
   (let* ((tmp-root (file-truename (make-temp-file "ai-code-utils-test-" t)))
-         (expected-dir (expand-file-name ".ai.code.files" tmp-root)))
+         (expected-dir (expand-file-name ".ai.code.files" tmp-root))
+         (ai-code-files-directory-strategy 'git-root))
     (unwind-protect
         (cl-letf (((symbol-function 'magit-toplevel)
-                   (lambda (&optional _dir) tmp-root)))
+                   (lambda (&optional _dir) tmp-root))
+                  ((symbol-function 'ai-code--worktree-main-repo-root)
+                   (lambda () nil)))
           (should-not (file-directory-p expected-dir))
           (let ((result (ai-code--ensure-files-directory)))
             (should (file-directory-p expected-dir))

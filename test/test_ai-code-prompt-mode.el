@@ -159,13 +159,15 @@ and ensures everything is cleaned up afterward."
 (ert-deftest ai-code-test-get-files-directory-in-git-repo ()
   "Test that ai-code--get-files-directory returns .ai.code.files/ in git repo."
   (ai-code-with-test-repo
-   (let ((expected-dir (expand-file-name ".ai.code.files" git-root)))
+   (let ((expected-dir (expand-file-name ".ai.code.files" git-root))
+         (ai-code-files-directory-strategy 'git-root))
      (should (string= (ai-code--get-files-directory) expected-dir)))))
 
 (ert-deftest ai-code-test-get-files-directory-not-in-git-repo ()
   "Test that ai-code--get-files-directory returns default-directory when not in git repo."
   (cl-letf (((symbol-function 'magit-toplevel) (lambda (&optional dir) nil)))
-    (let ((default-directory "/tmp/test-dir/"))
+    (let ((default-directory "/tmp/test-dir/")
+          (ai-code-files-directory-strategy 'git-root))
       (should (string= (ai-code--get-files-directory) default-directory)))))
 
 (ert-deftest ai-code-test-ensure-files-directory-creates-directory ()
