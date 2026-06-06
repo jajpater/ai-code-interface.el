@@ -183,22 +183,16 @@ and sent to the current AI session."
   :group 'ai-code)
 
 ;;;###autoload
-(defun ai-code-send-command (arg)
-  "Read a prompt from the user and send it to the AI service.
-With \\[universal-argument], append files and repo context.
-With \\[universal-argument] \\[universal-argument], also append clipboard context.
-ARG is the prefix argument."
-  ;; Prefix levels control whether files/repo and clipboard context are included,
-  ;; and the prompt label reflects the selected context.
-  (interactive "P")
+(defun ai-code--send-command-with-context (include-files-and-repo include-clipboard)
+  "Read and send a prompt with optional context.
+When INCLUDE-FILES-AND-REPO is non-nil, append visible files and
+stored repository context.  When INCLUDE-CLIPBOARD is non-nil,
+also append clipboard context."
   (let* ((initial-input (when (use-region-p)
                           (string-trim-right
                            (buffer-substring-no-properties (region-beginning)
                                                            (region-end))
                            "\n")))
-         (prefix-value (when arg (prefix-numeric-value arg)))
-         (include-files-and-repo (and arg (>= prefix-value 4)))
-         (include-clipboard (and arg (>= prefix-value 16)))
          (files-context-string (when include-files-and-repo
                                  (ai-code--get-context-files-string)))
          (repo-context-string (when include-files-and-repo
@@ -220,6 +214,33 @@ ARG is the prefix argument."
                        (concat "\n\nClipboard context:\n"
                                clipboard-context)))))
          (ai-code--insert-prompt final-prompt)))))
+
+;;;###autoload
+(defun ai-code-send-command (arg)
+  "Read a prompt from the user and send it to the AI service.
+With \\[universal-argument], append files and repo context.
+With \\[universal-argument] \\[universal-argument], also append clipboard context.
+ARG is the prefix argument."
+  ;; Prefix levels control whether files/repo and clipboard context are included,
+  ;; and the prompt label reflects the selected context.
+  (interactive "P")
+  (let* ((prefix-value (when arg (prefix-numeric-value arg)))
+         (include-files-and-repo (and arg (>= prefix-value 4)))
+         (include-clipboard (and arg (>= prefix-value 16))))
+    (ai-code--send-command-with-context include-files-and-repo
+                                        include-clipboard)))
+
+;;;###autoload
+(defun ai-code-send-command-with-files-context ()
+  "Read a prompt and send it with files and repo context."
+  (interactive)
+  (ai-code--send-command-with-context t nil))
+
+;;;###autoload
+(defun ai-code-send-command-with-clipboard-context ()
+  "Read a prompt and send it with files, repo, and clipboard context."
+  (interactive)
+  (ai-code--send-command-with-context t t))
 
 ;;;###autoload
 (defun ai-code-send-quick-prompt ()
@@ -460,6 +481,8 @@ Shows the current backend label to the right."
   ("q" "Ask question (C-u: clipboard)" ai-code-ask-question)
   ("x" "Explain code in scope" ai-code-explain)
   ("<SPC>" "Send command (C-u: context)" ai-code-send-command)
+  ("m" "Send command with files/repo context" ai-code-send-command-with-files-context)
+  ("y" "Send command with files/repo/clipboard context" ai-code-send-command-with-clipboard-context)
   ("@" "Context (add/show/clear)" ai-code-context-action)
   ("C" "Create file or dir with AI" ai-code-create-file-or-dir)
   (":" "Speech to text input" ai-code-speech-to-text-input)
