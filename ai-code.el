@@ -162,11 +162,17 @@ with a newline separator."
   :type '(choice (const nil) string)
   :group 'ai-code)
 
+(put 'ai-code-prompt-suffix
+     'safe-local-variable
+     (lambda (value) (or (null value) (stringp value))))
+
 ;;;###autoload
 (defcustom ai-code-use-prompt-suffix t
   "When non-nil, append `ai-code-prompt-suffix` where supported."
   :type 'boolean
   :group 'ai-code)
+
+(put 'ai-code-use-prompt-suffix 'safe-local-variable #'booleanp)
 
 ;;;###autoload
 (defcustom ai-code-quick-prompts nil

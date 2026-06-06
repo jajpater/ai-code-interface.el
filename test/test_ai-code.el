@@ -35,6 +35,11 @@
   "Test that loading `ai-code` also loads the harness module."
   (should (featurep 'ai-code-harness)))
 
+(ert-deftest ai-code-test-prompt-suffix-settings-are-safe-local-variables ()
+  "Test that prompt suffix settings can be configured with .dir-locals.el."
+  (should (get 'ai-code-prompt-suffix 'safe-local-variable))
+  (should (get 'ai-code-use-prompt-suffix 'safe-local-variable)))
+
 (ert-deftest ai-code-test-select-terminal-updates-terminal-backend-and-syncs-reflow-advice ()
   "Test that selecting a terminal backend updates infra state."
   (let ((ai-code-backends-infra-terminal-backend 'eat)

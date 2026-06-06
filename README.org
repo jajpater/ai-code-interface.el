@@ -371,6 +371,22 @@ Nit: During using auto test feature, I prefer to turn off the approval request f
 
 - Relevant article: [[https://martinfowler.com/articles/exploring-gen-ai/harness-engineering.html][Harness Engineering]]
 
+**** Project-local prompt settings
+
+AI Code prompt settings can be configured per project or directory with
+Emacs' built-in =.dir-locals.el=.  For example:
+
+#+begin_src elisp
+((nil . ((ai-code-auto-test-type . nil)
+         (ai-code-prompt-suffix . nil)
+         (ai-code-discussion-auto-follow-up-enabled . nil)
+         (ai-code-next-step-suggestion-suffix
+          . "Provide 3 numbered follow-up prompts I can send next."))))
+#+end_src
+
+These settings are safe local variables, so Emacs can apply them from
+=.dir-locals.el= without an unsafe-variable prompt.
+
 *** Desktop Notifications (Experimental)
 
 When working with multiple AI sessions, it can be useful to receive desktop notifications when AI responses are complete. This is especially helpful when you prompt an AI and then switch to other tasks while waiting for the response.

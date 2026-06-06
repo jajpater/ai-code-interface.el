@@ -780,6 +780,12 @@
   "Test that discussion auto follow-up defaults to enabled."
   (should (eq t (default-value 'ai-code-discussion-auto-follow-up-enabled))))
 
+(ert-deftest ai-code-test-prompt-settings-are-safe-local-variables ()
+  "Test that prompt harness settings can be configured with .dir-locals.el."
+  (should (get 'ai-code-auto-test-type 'safe-local-variable))
+  (should (get 'ai-code-discussion-auto-follow-up-enabled 'safe-local-variable))
+  (should (get 'ai-code-next-step-suggestion-suffix 'safe-local-variable)))
+
 (ert-deftest ai-code-test-resolve-auto-test-suffix-for-send-ask-me-tdd-with-refactoring ()
   "Test that ask-me resolves to the repo-local TDD harness reference."
   (let* ((temp-root (make-temp-file "ai-code-harness-root-" t))

@@ -255,6 +255,10 @@ test suffixes."
   :type '(choice (const nil) string)
   :group 'ai-code)
 
+(put 'ai-code-next-step-suggestion-suffix
+     'safe-local-variable
+     (lambda (value) (or (null value) (stringp value))))
+
 ;;;; Send-Time Routing: Prompt Classification
 
 (defun ai-code--downcase-strings (strings)
@@ -423,6 +427,10 @@ Send-time routing uses this result for test and discussion follow-up suffixes."
   :set #'ai-code--test-after-code-change--set
   :group 'ai-code)
 
+(put 'ai-code-auto-test-type
+     'safe-local-variable
+     (lambda (value) (memq value '(nil ask-me))))
+
 (defcustom ai-code-discussion-auto-follow-up-enabled t
   "When non-nil, prompts may request numbered next-step suggestions.
 This is enabled by default; customize it to nil to turn the send-time
@@ -434,6 +442,10 @@ suggestions."
          (set-default symbol value)
          (set symbol value))
   :group 'ai-code)
+
+(put 'ai-code-discussion-auto-follow-up-enabled
+     'safe-local-variable
+     #'booleanp)
 
 (provide 'ai-code-harness)
 
